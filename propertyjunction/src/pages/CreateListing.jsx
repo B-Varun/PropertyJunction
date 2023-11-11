@@ -16,23 +16,24 @@ import { useNavigate } from "react-router-dom";
 export default function CreateListing() {
   const navigate = useNavigate();
   const auth = getAuth();
-  const [geolocationEnabled, setGeolocationEnabled] = useState(true);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    propertyType: "house",
+    propertyType: "",
     type: "rent",
     name: "",
     bedrooms: 1,
     bathrooms: 1,
     parking: false,
-    furnished: false,
+    furnished: "",
     address: "",
     description: "",
     offer: false,
     regularPrice: 0,
+    builtArea: 0,
     discountedPrice: 0,
-    latitude: 0,
-    longitude: 0,
+    locality: "",
+    pincode:123456,
+    amenities:"",
     images: {},
   });
   const {
@@ -47,10 +48,12 @@ export default function CreateListing() {
     description,
     offer,
     regularPrice,
+    builtArea,
     discountedPrice,
-    latitude,
-    longitude,
     images,
+    locality,
+    pincode,
+    amenities,
   } = formData;
   function onChange(e) {
     let boolean = null;
@@ -88,29 +91,7 @@ export default function CreateListing() {
       toast.error("maximum 6 images are allowed");
       return;
     }
-    let geolocation = {};
-    let location;
-    if (geolocationEnabled) {
-      const response = await fetch(
-        `https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${process.env.REACT_APP_GEOCODE_API_KEY}`
-      );
-      const data = await response.json();
-      console.log(data);
-      geolocation.lat = data.results[0]?.geometry.location.lat ?? 0;
-      geolocation.lng = data.results[0]?.geometry.location.lng ?? 0;
-
-      location = data.status === "ZERO_RESULTS" && undefined;
-
-      if (location === undefined) {
-        setLoading(false);
-        toast.error("please enter a correct address");
-        return;
-      }
-    } else {
-      geolocation.lat = latitude;
-      geolocation.lng = longitude;
-    }
-
+  
     async function storeImage(image) {
       return new Promise((resolve, reject) => {
         const storage = getStorage();
@@ -160,14 +141,11 @@ export default function CreateListing() {
     const formDataCopy = {
       ...formData,
       imgUrls,
-      geolocation,
       timestamp: serverTimestamp(),
       userRef: auth.currentUser.uid,
     };
     delete formDataCopy.images;
     !formDataCopy.offer && delete formDataCopy.discountedPrice;
-    delete formDataCopy.latitude;
-    delete formDataCopy.longitude;
     const docRef = await addDoc(collection(db, "listings"), formDataCopy);
     setLoading(false);
     toast.success("Listing created");
@@ -191,7 +169,7 @@ export default function CreateListing() {
           <option value="house">House</option>
           <option value="apartment">Apartment</option>
           <option value="condo">Condo</option>
-          <option value="condo">Commercial</option>
+          <option value="commercial">Commercial</option>
         </select>
       </p>
         <p className="text-lg mt-6 font-semibold">Sell / Rent</p>
@@ -235,6 +213,26 @@ export default function CreateListing() {
           required
           className="w-full px-4 py-2 text-xl text-gray-700 bg-white border border-gray-300 rounded transition duration-150 ease-in-out focus:text-gray-700 focus:bg-white focus:border-slate-600 mb-6"
         />
+         <div className="flex items-center mb-6">
+          <div className="">
+            <p className="text-lg font-semibold">Built Area</p>
+            <div className="flex w-full justify-center items-center space-x-6">
+              <input
+                type="number"
+                id="builtArea"
+                value={builtArea}
+                onChange={onChange}
+                min="50"
+                max="400000000"
+                required
+                className="w-full px-4 py-2 text-xl text-gray-700 bg-white border border-gray-300 rounded transition duration-150 ease-in-out focus:text-gray-700 focus:bg-white focus:border-slate-600 text-center"
+              />
+                <div className="">
+                  <p className="text-md w-full whitespace-nowrap">SQ FT</p>
+                </div>
+            </div>
+          </div>
+        </div> 
         <div className="flex space-x-6 mb-6">
           <div>
             <p className="text-lg font-semibold">Beds</p>
@@ -288,81 +286,74 @@ export default function CreateListing() {
             no
           </button>
         </div>
-        <p className="text-lg mt-6 font-semibold">Furnished</p>
-        <div className="flex">
-          <button
-            type="button"
-            id="furnished"
-            value={true}
-            onClick={onChange}
-            className={`mr-3 px-7 py-3 font-medium text-sm uppercase shadow-md rounded hover:shadow-lg focus:shadow-lg active:shadow-lg transition duration-150 ease-in-out w-full ${
-              !furnished ? "bg-white text-black" : "bg-slate-600 text-white"
-            }`}
-          >
-            yes
-          </button>
-          <button
-            type="button"
-            id="furnished"
-            value={false}
-            onClick={onChange}
-            className={`ml-3 px-7 py-3 font-medium text-sm uppercase shadow-md rounded hover:shadow-lg focus:shadow-lg active:shadow-lg transition duration-150 ease-in-out w-full ${
-              furnished ? "bg-white text-black" : "bg-slate-600 text-white"
-            }`}
-          >
-            no
-          </button>
-        </div>
+        <p className="text-lg mt-6 font-semibold">
+        Furnish:
+        <select className={'ml-1 mt-3 bg-white border-gray-300 rounded transition ease-in-out'}
+          id="furnished"
+          required
+          value={furnished}
+          onChange={(e) => setFormData({ ...formData, furnished: e.target.value })}>
+          <option value="">Any</option>
+          <option value="fully">Fully</option>
+          <option value="semi">Semi</option>
+          <option value="no">No</option>
+        </select>
+        </p>
+
+        <p className="text-lg mt-6 font-semibold">
+        Amenities:
+        <select className={'ml-1 mt-3 bg-white border-gray-300 rounded transition ease-in-out'}
+          id="amenities"
+          required
+          value={amenities}
+          onChange={(e) => {
+            // Convert selected options to an array of values
+            const selectedOptions = Array.from(e.target.selectedOptions, option => option.value);
+            setFormData({ ...formData, amenities: selectedOptions });
+          }}>
+          <option value="">Any</option>
+          <option value="fully">Fully</option>
+          <option value="semi">Semi</option>
+          <option value="no">No</option>
+        </select>
+        </p>
+
         <p className="text-lg mt-6 font-semibold">Address</p>
-        <textarea
+        <input
           type="text"
           id="address"
           value={address}
           onChange={onChange}
           placeholder="Address"
+          maxLength="256"
+          minLength="5"
           required
           className="w-full px-4 py-2 text-xl text-gray-700 bg-white border border-gray-300 rounded transition duration-150 ease-in-out focus:text-gray-700 focus:bg-white focus:border-slate-600 mb-6"
         />
-        {!geolocationEnabled && (
-          <div className="flex space-x-6 justify-start mb-6">
-            <div className="">
-              <p className="text-lg font-semibold">Latitude</p>
-              <input
-                type="number"
-                id="latitude"
-                value={latitude}
-                onChange={onChange}
-                required
-                min="-90"
-                max="90"
-                className="w-full px-4 py-2 text-xl text-gray-700 bg-white border border-gray-300 rounded transition duration-150 ease-in-out focus:bg-white focus:text-gray-700 focus:border-slate-600 text-center"
-              />
-            </div>
-            <div className="">
-              <p className="text-lg font-semibold">Longitude</p>
-              <input
-                type="number"
-                id="longitude"
-                value={longitude}
-                onChange={onChange}
-                required
-                min="-180"
-                max="180"
-                className="w-full px-4 py-2 text-xl text-gray-700 bg-white border border-gray-300 rounded transition duration-150 ease-in-out focus:bg-white focus:text-gray-700 focus:border-slate-600 text-center"
-              />
-            </div>
+        <div className="flex space-x-6 mb-6">
+          <div>
+            <p className="text-lg font-semibold">Locality</p>
+            <input
+              type="text"
+              id="locality"
+              value={locality}
+              onChange={onChange}
+              required
+              className="w-full px-4 py-2 text-xl text-gray-700 bg-white border border-gray-300 rounded transition duration-150 ease-in-out focus:text-gray-700 focus:bg-white focus:border-slate-600 text-center"
+            />
           </div>
-        )}
-        <p className="text-lg font-semibold">Description</p>
-        <textarea
-          type="text"
-          id="description"
-          value={description}
-          onChange={onChange}
-          placeholder="Description"
-          required
-          className="w-full px-4 py-2 text-xl text-gray-700 bg-white border border-gray-300 rounded transition duration-150 ease-in-out focus:text-gray-700 focus:bg-white focus:border-slate-600 mb-6"
-        />
+          <div>
+            <p className="text-lg font-semibold">Pincode</p>
+            <input
+              type="number"
+              id="pincode"
+              value={pincode}
+              onChange={onChange}
+              required
+              className="w-full px-4 py-2 text-xl text-gray-700 bg-white border border-gray-300 rounded transition duration-150 ease-in-out focus:text-gray-700 focus:bg-white focus:border-slate-600 text-center"
+            />
+          </div>
+        </div>
         <p className="text-lg font-semibold">Offer</p>
         <div className="flex mb-6">
           <button
