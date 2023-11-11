@@ -84,6 +84,7 @@ export default function ApplyFilters() {
     }
   };
   console.log('8');
+  //
   return (
     
     <div className="max-w-6xl mx-auto pt-4 space-y-6">
