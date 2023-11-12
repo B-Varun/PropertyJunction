@@ -16,6 +16,7 @@ import { useNavigate } from "react-router-dom";
 export default function CreateListing() {
   const navigate = useNavigate();
   const auth = getAuth();
+  //const sftPrice = regularPrice / builtArea;
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     propertyType: "",
@@ -26,12 +27,13 @@ export default function CreateListing() {
     parking: false,
     furnished: "",
     address: "",
-    description: "",
     offer: false,
-    regularPrice: 0,
-    builtArea: 0,
-    sqftPrice: 0,
-    discountedPrice: 0,
+    regularPrice: "",
+    builtArea: "",
+    sqftPrice: "",
+    discountedPrice: "",
+    securityDeposit: "",
+    maintenanceCharges: "",
     locality: "",
     pincode:123456,
     amenities:"",
@@ -47,7 +49,6 @@ export default function CreateListing() {
     parking,
     address,
     furnished,
-    description,
     offer,
     regularPrice,
     builtArea,
@@ -58,7 +59,18 @@ export default function CreateListing() {
     pincode,
     amenities,
     securitySafety,
+    securityDeposit,
+    maintenanceCharges
   } = formData;
+
+  const calculateSqftPrice = () => {
+    const calculatedSqftPrice = Number((regularPrice / builtArea * 10).toFixed(2));
+    setFormData((prevState) => ({
+      ...prevState,
+      sqftPrice: calculatedSqftPrice,
+    }));
+  };
+
   function onChange(e) {
     let boolean = null;
     if (e.target.value === "true") {
@@ -80,7 +92,12 @@ export default function CreateListing() {
         ...prevState,
         [e.target.id]: boolean ?? e.target.value,
       }));
-    // Handle check box
+
+    // Calculate sqft price
+
+    if (e.target.id === 'regularPrice' || e.target.id === 'builtArea') {
+      calculateSqftPrice();
+    }
     
     }
   }
@@ -168,10 +185,11 @@ export default function CreateListing() {
       </div>
       <form onSubmit={onSubmit}>
       <p className="text-lg mt-6 font-semibold">
-        Property Type:
+        Property Type
         <select className={'ml-1 mt-3 bg-white border-gray-300 rounded transition ease-in-out'}
           id="propertyType"
           value={propertyType}
+          required
           onChange={(e) => setFormData({ ...formData, propertyType: e.target.value })}>
           <option value="">Any</option>
           <option value="house">House</option>
@@ -230,8 +248,6 @@ export default function CreateListing() {
                 id="builtArea"
                 value={builtArea}
                 onChange={onChange}
-                min="50"
-                max="400000000"
                 required
                 className="w-full px-4 py-2 text-xl text-gray-700 bg-white border border-gray-300 rounded transition duration-150 ease-in-out focus:text-gray-700 focus:bg-white focus:border-slate-600 text-center"
               />
@@ -308,7 +324,7 @@ export default function CreateListing() {
         </select>
         </p>
 
-        <p className="text-lg mt-6 font-semibold">Security & Safety:</p>
+        <p className="text-lg mt-6 font-semibold">Security & Safety</p>
         <div className="ml-1 mt-3 space-y-2">
           <label className="inline-flex items-center">
             <input
@@ -362,6 +378,63 @@ export default function CreateListing() {
               }}
             />
             <span className="ml-2">Smoke Detectors</span>
+          </label>
+        </div>
+        
+        <p className="text-lg mt-6 font-semibold">Amenities</p>
+        <div className="ml-1 mt-3 space-y-2">
+          <label className="inline-flex items-center">
+            <input
+              type="checkbox"
+              value="swimming pool"
+              checked={amenities.includes("swimming pool")}
+              onChange={(e) => {
+                const isChecked = e.target.checked;
+                setFormData((prevFormData) => ({
+                  ...prevFormData,
+                  amenities: isChecked
+                    ? [...prevFormData.amenities, "swimming pool"]
+                    : prevFormData.amenities.filter((value) => value !== "swimming pool"),
+                }));
+              }}
+            />
+            <span className="ml-2">Swimming Pool</span>
+          </label>
+
+          <label className="ml-2 inline-flex items-center">
+            <input
+              type="checkbox"
+              value="lift"
+              checked={amenities.includes("lift")}
+              onChange={(e) => {
+                const isChecked = e.target.checked;
+                setFormData((prevFormData) => ({
+                  ...prevFormData,
+                  amenities: isChecked
+                    ? [...prevFormData.amenities, "lift"]
+                    : prevFormData.amenities.filter((value) => value !== "lift"),
+                }));
+              }}
+            />
+            <span className="ml-2">Lift</span>
+          </label>
+
+          <label className="ml-1 inline-flex items-center">
+            <input
+              type="checkbox"
+              value="gymnasium"
+              checked={amenities.includes("gymnasium")}
+              onChange={(e) => {
+                const isChecked = e.target.checked;
+                setFormData((prevFormData) => ({
+                  ...prevFormData,
+                  amenities: isChecked
+                    ? [...prevFormData.amenities, "gymnasium"]
+                    : prevFormData.amenities.filter((value) => value !== "gymnasium"),
+                }));
+              }}
+            />
+            <span className="ml-2">Gymnasium</span>
           </label>
         </div>
 
@@ -435,8 +508,6 @@ export default function CreateListing() {
                 id="regularPrice"
                 value={regularPrice}
                 onChange={onChange}
-                min="50"
-                max="400000000"
                 required
                 className="w-full px-4 py-2 text-xl text-gray-700 bg-white border border-gray-300 rounded transition duration-150 ease-in-out focus:text-gray-700 focus:bg-white focus:border-slate-600 text-center"
               />
@@ -444,21 +515,53 @@ export default function CreateListing() {
                 <div className="">
                   <p className="text-md w-full whitespace-nowrap">$ / Month</p>
                 </div>
-              )}
+              )}   
             </div>
           </div>
+          {type === "rent" && (
+          <div>
+            <p className="text-lg font-semibold">Security Deposit</p>
+            <input
+              type="number"
+              id="securityDeposit"
+              value={securityDeposit}
+              onChange={onChange}
+              className="w-full px-4 py-2 text-xl text-gray-700 bg-white border border-gray-300 rounded transition duration-150 ease-in-out focus:text-gray-700 focus:bg-white focus:border-slate-600 text-center"
+            />
+          </div>
+          )}
+          {type === "sale" && (
           <div>
             <p className="text-lg font-semibold">Price/SqFt</p>
             <input
               type="disabled"
-              id="pincode"
-              value={pincode}
+              id="sqftPrice"
+              value={sqftPrice}
               onChange={onChange}
-              required
+              disabled
               className="w-full px-4 py-2 text-xl text-gray-700 bg-white border border-gray-300 rounded transition duration-150 ease-in-out focus:text-gray-700 focus:bg-white focus:border-slate-600 text-center"
             />
           </div>
+          )}
         </div>
+
+        <div className="flex items-center mb-6">
+          <div className="">
+            <p className="text-lg font-semibold">Maintenance Charges</p>
+            <div className="flex w-full justify-center items-center space-x-6">
+              <input
+                type="number"
+                id="maintenanceCharges"
+                value={maintenanceCharges}
+                onChange={onChange}
+                required
+                className="w-full px-4 py-2 text-xl text-gray-700 bg-white border border-gray-300 rounded transition duration-150 ease-in-out focus:text-gray-700 focus:bg-white focus:border-slate-600 text-center"
+              />
+              <p className="text-md w-full whitespace-nowrap">$ / Year</p>
+            </div>
+          </div>
+        </div>
+        
         {offer && (
           <div className="flex items-center mb-6">
             <div className="">
@@ -469,8 +572,6 @@ export default function CreateListing() {
                   id="discountedPrice"
                   value={discountedPrice}
                   onChange={onChange}
-                  min="50"
-                  max="400000000"
                   required={offer}
                   className="w-full px-4 py-2 text-xl text-gray-700 bg-white border border-gray-300 rounded transition duration-150 ease-in-out focus:text-gray-700 focus:bg-white focus:border-slate-600 text-center"
                 />
