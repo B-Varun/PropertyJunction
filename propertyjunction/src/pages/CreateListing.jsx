@@ -30,10 +30,12 @@ export default function CreateListing() {
     offer: false,
     regularPrice: 0,
     builtArea: 0,
+    sqftPrice: 0,
     discountedPrice: 0,
     locality: "",
     pincode:123456,
     amenities:"",
+    securitySafety:"",
     images: {},
   });
   const {
@@ -49,11 +51,13 @@ export default function CreateListing() {
     offer,
     regularPrice,
     builtArea,
+    sqftPrice,
     discountedPrice,
     images,
     locality,
     pincode,
     amenities,
+    securitySafety,
   } = formData;
   function onChange(e) {
     let boolean = null;
@@ -70,12 +74,14 @@ export default function CreateListing() {
         images: e.target.files,
       }));
     }
-    // Text/Boolean/Number
+    // Text/Boolean/Number //
     if (!e.target.files) {
       setFormData((prevState) => ({
         ...prevState,
         [e.target.id]: boolean ?? e.target.value,
       }));
+    // Handle check box
+    
     }
   }
   async function onSubmit(e) {
@@ -158,6 +164,8 @@ export default function CreateListing() {
   return (
     <main className="max-w-md px-2 mx-auto">
       <h1 className="text-3xl text-center mt-6 font-bold">Create a Listing</h1>
+      <div className="flex items-center  my-4 before:border-t before:flex-1 before:border-gray-800 after:border-t after:flex-1 after:border-gray-800">
+      </div>
       <form onSubmit={onSubmit}>
       <p className="text-lg mt-6 font-semibold">
         Property Type:
@@ -300,23 +308,62 @@ export default function CreateListing() {
         </select>
         </p>
 
-        <p className="text-lg mt-6 font-semibold">
-        Amenities:
-        <select className={'ml-1 mt-3 bg-white border-gray-300 rounded transition ease-in-out'}
-          id="amenities"
-          required
-          value={amenities}
-          onChange={(e) => {
-            // Convert selected options to an array of values
-            const selectedOptions = Array.from(e.target.selectedOptions, option => option.value);
-            setFormData({ ...formData, amenities: selectedOptions });
-          }}>
-          <option value="">Any</option>
-          <option value="fully">Fully</option>
-          <option value="semi">Semi</option>
-          <option value="no">No</option>
-        </select>
-        </p>
+        <p className="text-lg mt-6 font-semibold">Security & Safety:</p>
+        <div className="ml-1 mt-3 space-y-2">
+          <label className="inline-flex items-center">
+            <input
+              type="checkbox"
+              value="surveillancecameras"
+              checked={securitySafety.includes("surveillance cameras")}
+              onChange={(e) => {
+                const isChecked = e.target.checked;
+                setFormData((prevFormData) => ({
+                  ...prevFormData,
+                  securitySafety: isChecked
+                    ? [...prevFormData.securitySafety, "surveillance cameras"]
+                    : prevFormData.securitySafety.filter((value) => value !== "surveillance cameras"),
+                }));
+              }}
+            />
+            <span className="ml-2">Surveillance Cameras</span>
+          </label>
+
+          <label className="ml-2 inline-flex items-center">
+            <input
+              type="checkbox"
+              value="firealarm"
+              checked={securitySafety.includes("fire alarm")}
+              onChange={(e) => {
+                const isChecked = e.target.checked;
+                setFormData((prevFormData) => ({
+                  ...prevFormData,
+                  securitySafety: isChecked
+                    ? [...prevFormData.securitySafety, "fire alarm"]
+                    : prevFormData.securitySafety.filter((value) => value !== "fire alarm"),
+                }));
+              }}
+            />
+            <span className="ml-2">Fire Alarm</span>
+          </label>
+
+          <label className="ml-1 inline-flex items-center">
+            <input
+              type="checkbox"
+              value="smokedetectors"
+              checked={securitySafety.includes("smoke detectors")}
+              onChange={(e) => {
+                const isChecked = e.target.checked;
+                setFormData((prevFormData) => ({
+                  ...prevFormData,
+                  securitySafety: isChecked
+                    ? [...prevFormData.securitySafety, "smoke detectors"]
+                    : prevFormData.securitySafety.filter((value) => value !== "smoke detectors"),
+                }));
+              }}
+            />
+            <span className="ml-2">Smoke Detectors</span>
+          </label>
+        </div>
 
         <p className="text-lg mt-6 font-semibold">Address</p>
         <input
@@ -379,7 +426,7 @@ export default function CreateListing() {
             no
           </button>
         </div>
-        <div className="flex items-center mb-6">
+        <div className="flex space-x-6 mb-6">
           <div className="">
             <p className="text-lg font-semibold">Regular price</p>
             <div className="flex w-full justify-center items-center space-x-6">
@@ -399,6 +446,17 @@ export default function CreateListing() {
                 </div>
               )}
             </div>
+          </div>
+          <div>
+            <p className="text-lg font-semibold">Price/SqFt</p>
+            <input
+              type="disabled"
+              id="pincode"
+              value={pincode}
+              onChange={onChange}
+              required
+              className="w-full px-4 py-2 text-xl text-gray-700 bg-white border border-gray-300 rounded transition duration-150 ease-in-out focus:text-gray-700 focus:bg-white focus:border-slate-600 text-center"
+            />
           </div>
         </div>
         {offer && (
