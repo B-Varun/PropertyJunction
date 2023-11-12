@@ -16,23 +16,28 @@ import { useNavigate } from "react-router-dom";
 export default function CreateListing() {
   const navigate = useNavigate();
   const auth = getAuth();
-  const [geolocationEnabled, setGeolocationEnabled] = useState(true);
+  //const sftPrice = regularPrice / builtArea;
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    propertyType: "house",
+    propertyType: "",
     type: "rent",
     name: "",
     bedrooms: 1,
     bathrooms: 1,
     parking: false,
-    furnished: false,
+    furnished: "",
     address: "",
-    description: "",
     offer: false,
-    regularPrice: 0,
-    discountedPrice: 0,
-    latitude: 0,
-    longitude: 0,
+    regularPrice: "",
+    builtArea: "",
+    sqftPrice: "",
+    discountedPrice: "",
+    securityDeposit: "",
+    maintenanceCharges: "",
+    locality: "",
+    pincode:123456,
+    amenities:"",
+    securitySafety:"",
     images: {},
   });
   const {
@@ -44,14 +49,28 @@ export default function CreateListing() {
     parking,
     address,
     furnished,
-    description,
     offer,
     regularPrice,
+    builtArea,
+    sqftPrice,
     discountedPrice,
-    latitude,
-    longitude,
     images,
+    locality,
+    pincode,
+    amenities,
+    securitySafety,
+    securityDeposit,
+    maintenanceCharges
   } = formData;
+
+  const calculateSqftPrice = () => {
+    const calculatedSqftPrice = Number((regularPrice / builtArea * 10).toFixed(2));
+    setFormData((prevState) => ({
+      ...prevState,
+      sqftPrice: calculatedSqftPrice,
+    }));
+  };
+
   function onChange(e) {
     let boolean = null;
     if (e.target.value === "true") {
@@ -67,12 +86,19 @@ export default function CreateListing() {
         images: e.target.files,
       }));
     }
-    // Text/Boolean/Number
+    // Text/Boolean/Number //
     if (!e.target.files) {
       setFormData((prevState) => ({
         ...prevState,
         [e.target.id]: boolean ?? e.target.value,
       }));
+
+    // Calculate sqft price
+
+    if (e.target.id === 'regularPrice' || e.target.id === 'builtArea') {
+      calculateSqftPrice();
+    }
+    
     }
   }
   async function onSubmit(e) {
@@ -88,29 +114,7 @@ export default function CreateListing() {
       toast.error("maximum 6 images are allowed");
       return;
     }
-    let geolocation = {};
-    let location;
-    if (geolocationEnabled) {
-      const response = await fetch(
-        `https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${process.env.REACT_APP_GEOCODE_API_KEY}`
-      );
-      const data = await response.json();
-      console.log(data);
-      geolocation.lat = data.results[0]?.geometry.location.lat ?? 0;
-      geolocation.lng = data.results[0]?.geometry.location.lng ?? 0;
-
-      location = data.status === "ZERO_RESULTS" && undefined;
-
-      if (location === undefined) {
-        setLoading(false);
-        toast.error("please enter a correct address");
-        return;
-      }
-    } else {
-      geolocation.lat = latitude;
-      geolocation.lng = longitude;
-    }
-
+  
     async function storeImage(image) {
       return new Promise((resolve, reject) => {
         const storage = getStorage();
@@ -160,14 +164,11 @@ export default function CreateListing() {
     const formDataCopy = {
       ...formData,
       imgUrls,
-      geolocation,
       timestamp: serverTimestamp(),
       userRef: auth.currentUser.uid,
     };
     delete formDataCopy.images;
     !formDataCopy.offer && delete formDataCopy.discountedPrice;
-    delete formDataCopy.latitude;
-    delete formDataCopy.longitude;
     const docRef = await addDoc(collection(db, "listings"), formDataCopy);
     setLoading(false);
     toast.success("Listing created");
@@ -180,18 +181,21 @@ export default function CreateListing() {
   return (
     <main className="max-w-md px-2 mx-auto">
       <h1 className="text-3xl text-center mt-6 font-bold">Create a Listing</h1>
+      <div className="flex items-center  my-4 before:border-t before:flex-1 before:border-gray-800 after:border-t after:flex-1 after:border-gray-800">
+      </div>
       <form onSubmit={onSubmit}>
       <p className="text-lg mt-6 font-semibold">
-        Property Type:
+        Property Type
         <select className={'ml-1 mt-3 bg-white border-gray-300 rounded transition ease-in-out'}
           id="propertyType"
           value={propertyType}
+          required
           onChange={(e) => setFormData({ ...formData, propertyType: e.target.value })}>
           <option value="">Any</option>
           <option value="house">House</option>
           <option value="apartment">Apartment</option>
           <option value="condo">Condo</option>
-          <option value="condo">Commercial</option>
+          <option value="commercial">Commercial</option>
         </select>
       </p>
         <p className="text-lg mt-6 font-semibold">Sell / Rent</p>
@@ -235,6 +239,24 @@ export default function CreateListing() {
           required
           className="w-full px-4 py-2 text-xl text-gray-700 bg-white border border-gray-300 rounded transition duration-150 ease-in-out focus:text-gray-700 focus:bg-white focus:border-slate-600 mb-6"
         />
+         <div className="flex items-center mb-6">
+          <div className="">
+            <p className="text-lg font-semibold">Built Area</p>
+            <div className="flex w-full justify-center items-center space-x-6">
+              <input
+                type="number"
+                id="builtArea"
+                value={builtArea}
+                onChange={onChange}
+                required
+                className="w-full px-4 py-2 text-xl text-gray-700 bg-white border border-gray-300 rounded transition duration-150 ease-in-out focus:text-gray-700 focus:bg-white focus:border-slate-600 text-center"
+              />
+                <div className="">
+                  <p className="text-md w-full whitespace-nowrap">SQ FT</p>
+                </div>
+            </div>
+          </div>
+        </div> 
         <div className="flex space-x-6 mb-6">
           <div>
             <p className="text-lg font-semibold">Beds</p>
@@ -288,81 +310,170 @@ export default function CreateListing() {
             no
           </button>
         </div>
-        <p className="text-lg mt-6 font-semibold">Furnished</p>
-        <div className="flex">
-          <button
-            type="button"
-            id="furnished"
-            value={true}
-            onClick={onChange}
-            className={`mr-3 px-7 py-3 font-medium text-sm uppercase shadow-md rounded hover:shadow-lg focus:shadow-lg active:shadow-lg transition duration-150 ease-in-out w-full ${
-              !furnished ? "bg-white text-black" : "bg-slate-600 text-white"
-            }`}
-          >
-            yes
-          </button>
-          <button
-            type="button"
-            id="furnished"
-            value={false}
-            onClick={onChange}
-            className={`ml-3 px-7 py-3 font-medium text-sm uppercase shadow-md rounded hover:shadow-lg focus:shadow-lg active:shadow-lg transition duration-150 ease-in-out w-full ${
-              furnished ? "bg-white text-black" : "bg-slate-600 text-white"
-            }`}
-          >
-            no
-          </button>
+        <p className="text-lg mt-6 font-semibold">
+        Furnish:
+        <select className={'ml-1 mt-3 bg-white border-gray-300 rounded transition ease-in-out'}
+          id="furnished"
+          required
+          value={furnished}
+          onChange={(e) => setFormData({ ...formData, furnished: e.target.value })}>
+          <option value="">Any</option>
+          <option value="fully">Fully</option>
+          <option value="semi">Semi</option>
+          <option value="no">No</option>
+        </select>
+        </p>
+
+        <p className="text-lg mt-6 font-semibold">Security & Safety</p>
+        <div className="ml-1 mt-3 space-y-2">
+          <label className="inline-flex items-center">
+            <input
+              type="checkbox"
+              value="surveillancecameras"
+              checked={securitySafety.includes("surveillance cameras")}
+              onChange={(e) => {
+                const isChecked = e.target.checked;
+                setFormData((prevFormData) => ({
+                  ...prevFormData,
+                  securitySafety: isChecked
+                    ? [...prevFormData.securitySafety, "surveillance cameras"]
+                    : prevFormData.securitySafety.filter((value) => value !== "surveillance cameras"),
+                }));
+              }}
+            />
+            <span className="ml-2">Surveillance Cameras</span>
+          </label>
+
+          <label className="ml-2 inline-flex items-center">
+            <input
+              type="checkbox"
+              value="firealarm"
+              checked={securitySafety.includes("fire alarm")}
+              onChange={(e) => {
+                const isChecked = e.target.checked;
+                setFormData((prevFormData) => ({
+                  ...prevFormData,
+                  securitySafety: isChecked
+                    ? [...prevFormData.securitySafety, "fire alarm"]
+                    : prevFormData.securitySafety.filter((value) => value !== "fire alarm"),
+                }));
+              }}
+            />
+            <span className="ml-2">Fire Alarm</span>
+          </label>
+
+          <label className="ml-1 inline-flex items-center">
+            <input
+              type="checkbox"
+              value="smokedetectors"
+              checked={securitySafety.includes("smoke detectors")}
+              onChange={(e) => {
+                const isChecked = e.target.checked;
+                setFormData((prevFormData) => ({
+                  ...prevFormData,
+                  securitySafety: isChecked
+                    ? [...prevFormData.securitySafety, "smoke detectors"]
+                    : prevFormData.securitySafety.filter((value) => value !== "smoke detectors"),
+                }));
+              }}
+            />
+            <span className="ml-2">Smoke Detectors</span>
+          </label>
         </div>
+        
+        <p className="text-lg mt-6 font-semibold">Amenities</p>
+        <div className="ml-1 mt-3 space-y-2">
+          <label className="inline-flex items-center">
+            <input
+              type="checkbox"
+              value="swimming pool"
+              checked={amenities.includes("swimming pool")}
+              onChange={(e) => {
+                const isChecked = e.target.checked;
+                setFormData((prevFormData) => ({
+                  ...prevFormData,
+                  amenities: isChecked
+                    ? [...prevFormData.amenities, "swimming pool"]
+                    : prevFormData.amenities.filter((value) => value !== "swimming pool"),
+                }));
+              }}
+            />
+            <span className="ml-2">Swimming Pool</span>
+          </label>
+
+          <label className="ml-2 inline-flex items-center">
+            <input
+              type="checkbox"
+              value="lift"
+              checked={amenities.includes("lift")}
+              onChange={(e) => {
+                const isChecked = e.target.checked;
+                setFormData((prevFormData) => ({
+                  ...prevFormData,
+                  amenities: isChecked
+                    ? [...prevFormData.amenities, "lift"]
+                    : prevFormData.amenities.filter((value) => value !== "lift"),
+                }));
+              }}
+            />
+            <span className="ml-2">Lift</span>
+          </label>
+
+          <label className="ml-1 inline-flex items-center">
+            <input
+              type="checkbox"
+              value="gymnasium"
+              checked={amenities.includes("gymnasium")}
+              onChange={(e) => {
+                const isChecked = e.target.checked;
+                setFormData((prevFormData) => ({
+                  ...prevFormData,
+                  amenities: isChecked
+                    ? [...prevFormData.amenities, "gymnasium"]
+                    : prevFormData.amenities.filter((value) => value !== "gymnasium"),
+                }));
+              }}
+            />
+            <span className="ml-2">Gymnasium</span>
+          </label>
+        </div>
+
         <p className="text-lg mt-6 font-semibold">Address</p>
-        <textarea
+        <input
           type="text"
           id="address"
           value={address}
           onChange={onChange}
           placeholder="Address"
+          maxLength="256"
+          minLength="5"
           required
           className="w-full px-4 py-2 text-xl text-gray-700 bg-white border border-gray-300 rounded transition duration-150 ease-in-out focus:text-gray-700 focus:bg-white focus:border-slate-600 mb-6"
         />
-        {!geolocationEnabled && (
-          <div className="flex space-x-6 justify-start mb-6">
-            <div className="">
-              <p className="text-lg font-semibold">Latitude</p>
-              <input
-                type="number"
-                id="latitude"
-                value={latitude}
-                onChange={onChange}
-                required
-                min="-90"
-                max="90"
-                className="w-full px-4 py-2 text-xl text-gray-700 bg-white border border-gray-300 rounded transition duration-150 ease-in-out focus:bg-white focus:text-gray-700 focus:border-slate-600 text-center"
-              />
-            </div>
-            <div className="">
-              <p className="text-lg font-semibold">Longitude</p>
-              <input
-                type="number"
-                id="longitude"
-                value={longitude}
-                onChange={onChange}
-                required
-                min="-180"
-                max="180"
-                className="w-full px-4 py-2 text-xl text-gray-700 bg-white border border-gray-300 rounded transition duration-150 ease-in-out focus:bg-white focus:text-gray-700 focus:border-slate-600 text-center"
-              />
-            </div>
+        <div className="flex space-x-6 mb-6">
+          <div>
+            <p className="text-lg font-semibold">Locality</p>
+            <input
+              type="text"
+              id="locality"
+              value={locality}
+              onChange={onChange}
+              required
+              className="w-full px-4 py-2 text-xl text-gray-700 bg-white border border-gray-300 rounded transition duration-150 ease-in-out focus:text-gray-700 focus:bg-white focus:border-slate-600 text-center"
+            />
           </div>
-        )}
-        <p className="text-lg font-semibold">Description</p>
-        <textarea
-          type="text"
-          id="description"
-          value={description}
-          onChange={onChange}
-          placeholder="Description"
-          required
-          className="w-full px-4 py-2 text-xl text-gray-700 bg-white border border-gray-300 rounded transition duration-150 ease-in-out focus:text-gray-700 focus:bg-white focus:border-slate-600 mb-6"
-        />
+          <div>
+            <p className="text-lg font-semibold">Pincode</p>
+            <input
+              type="number"
+              id="pincode"
+              value={pincode}
+              onChange={onChange}
+              required
+              className="w-full px-4 py-2 text-xl text-gray-700 bg-white border border-gray-300 rounded transition duration-150 ease-in-out focus:text-gray-700 focus:bg-white focus:border-slate-600 text-center"
+            />
+          </div>
+        </div>
         <p className="text-lg font-semibold">Offer</p>
         <div className="flex mb-6">
           <button
@@ -388,7 +499,7 @@ export default function CreateListing() {
             no
           </button>
         </div>
-        <div className="flex items-center mb-6">
+        <div className="flex space-x-6 mb-6">
           <div className="">
             <p className="text-lg font-semibold">Regular price</p>
             <div className="flex w-full justify-center items-center space-x-6">
@@ -397,8 +508,6 @@ export default function CreateListing() {
                 id="regularPrice"
                 value={regularPrice}
                 onChange={onChange}
-                min="50"
-                max="400000000"
                 required
                 className="w-full px-4 py-2 text-xl text-gray-700 bg-white border border-gray-300 rounded transition duration-150 ease-in-out focus:text-gray-700 focus:bg-white focus:border-slate-600 text-center"
               />
@@ -406,10 +515,53 @@ export default function CreateListing() {
                 <div className="">
                   <p className="text-md w-full whitespace-nowrap">$ / Month</p>
                 </div>
-              )}
+              )}   
+            </div>
+          </div>
+          {type === "rent" && (
+          <div>
+            <p className="text-lg font-semibold">Security Deposit</p>
+            <input
+              type="number"
+              id="securityDeposit"
+              value={securityDeposit}
+              onChange={onChange}
+              className="w-full px-4 py-2 text-xl text-gray-700 bg-white border border-gray-300 rounded transition duration-150 ease-in-out focus:text-gray-700 focus:bg-white focus:border-slate-600 text-center"
+            />
+          </div>
+          )}
+          {type === "sale" && (
+          <div>
+            <p className="text-lg font-semibold">Price/SqFt</p>
+            <input
+              type="disabled"
+              id="sqftPrice"
+              value={sqftPrice}
+              onChange={onChange}
+              disabled
+              className="w-full px-4 py-2 text-xl text-gray-700 bg-white border border-gray-300 rounded transition duration-150 ease-in-out focus:text-gray-700 focus:bg-white focus:border-slate-600 text-center"
+            />
+          </div>
+          )}
+        </div>
+
+        <div className="flex items-center mb-6">
+          <div className="">
+            <p className="text-lg font-semibold">Maintenance Charges</p>
+            <div className="flex w-full justify-center items-center space-x-6">
+              <input
+                type="number"
+                id="maintenanceCharges"
+                value={maintenanceCharges}
+                onChange={onChange}
+                required
+                className="w-full px-4 py-2 text-xl text-gray-700 bg-white border border-gray-300 rounded transition duration-150 ease-in-out focus:text-gray-700 focus:bg-white focus:border-slate-600 text-center"
+              />
+              <p className="text-md w-full whitespace-nowrap">$ / Year</p>
             </div>
           </div>
         </div>
+        
         {offer && (
           <div className="flex items-center mb-6">
             <div className="">
@@ -420,8 +572,6 @@ export default function CreateListing() {
                   id="discountedPrice"
                   value={discountedPrice}
                   onChange={onChange}
-                  min="50"
-                  max="400000000"
                   required={offer}
                   className="w-full px-4 py-2 text-xl text-gray-700 bg-white border border-gray-300 rounded transition duration-150 ease-in-out focus:text-gray-700 focus:bg-white focus:border-slate-600 text-center"
                 />

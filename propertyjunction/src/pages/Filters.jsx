@@ -36,11 +36,11 @@ export default function ApplyFilters() {
       console.log('2');
       // Apply filters to the query
       if (filters.propertyType) {
-        filteredQuery = where(listingsCollection, 'propertyType', '==', filters.propertyType);
+        filteredQuery = query(listingsCollection, where('propertyType', '==', filters.propertyType));
       }
 
       if (filters.type) {
-        filteredQuery = where(listingsCollection, 'type', '==', filters.type);
+        filteredQuery = query(listingsCollection, where('type', '==', filters.type));
       }
 
       if (filters.priceMin) {
@@ -84,7 +84,6 @@ export default function ApplyFilters() {
     }
   };
   console.log('8');
-  //
   return (
     
     <div className="max-w-6xl mx-auto pt-4 space-y-6">

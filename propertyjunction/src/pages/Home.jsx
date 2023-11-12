@@ -29,6 +29,7 @@ export default function Home() {
           orderBy("timestamp", "desc"),
         );
 
+        //execute the query
         const unsubscribe = onSnapshot(q, (querySnap) => {
           const updatedListings = querySnap.docs.map((doc) => ({
             id: doc.id,
@@ -40,7 +41,7 @@ export default function Home() {
         // Cleanup function
         return () => unsubscribe();
       } catch (error) {
-        toast.error("Could not fetch listing");
+        console.log(error);
       }
     }
     fetchListings();
@@ -58,18 +59,19 @@ export default function Home() {
           listingsRef,
           where("type", "==", "rent"),
           orderBy("timestamp", "desc"),
-          //limit(4)
+          limit(8)
         );
-        // execute the query
-        const querySnap = await getDocs(q);
-        const listings = [];
-        querySnap.forEach((doc) => {
-          return listings.push({
+        //execute the query
+        const unsubscribe = onSnapshot(q, (querySnap) => {
+          const updatedListings = querySnap.docs.map((doc) => ({
             id: doc.id,
             data: doc.data(),
-          });
+          }));
+          setRentListings(updatedListings);
         });
-        setRentListings(listings);
+
+        // Cleanup function
+        return () => unsubscribe();
       } catch (error) {
         console.log(error);
       }
@@ -89,18 +91,18 @@ export default function Home() {
           listingsRef,
           where("type", "==", "sale"),
           orderBy("timestamp", "desc"),
-          limit(4)
+          limit(8)
         );
         // execute the query
-        const querySnap = await getDocs(q);
-        const listings = [];
-        querySnap.forEach((doc) => {
-          return listings.push({
+        const unsubscribe = onSnapshot(q, (querySnap) => {
+          const updatedListings = querySnap.docs.map((doc) => ({
             id: doc.id,
             data: doc.data(),
-          });
+          }));
+          setSaleListings(updatedListings);
         });
-        setSaleListings(listings);
+        // Cleanup function
+        return () => unsubscribe();
       } catch (error) {
         console.log(error);
       }
