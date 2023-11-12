@@ -13,28 +13,33 @@ export default function ApplyFilters() {
     type: '',
     priceMin: '',
     priceMax: '',
+    builtAreaMax:'',
+    builtAreaMin:'',
     bathrooms: '',
     bedrooms: '',
     furnish: '',
   });
 
   const handleFilterChange = (filterName, value) => {
+    console.log('Inside handle filter change function');
     setFilters((prevFilters) => ({
       ...prevFilters,
       [filterName]: value,
     }));
   };
-  console.log('7');
+  
   async function applyFilters() {
     setLoading(true);
-    console.log('1');
+    console.log('Inside apply filters function');
     try {
       // Perform Firestore query using the filters
       const db = getFirestore();
       const listingsCollection = collection(db, 'listings');
       let filteredQuery = query(listingsCollection);
-      console.log('2');
+      console.log('In the try block of apply filters');
       // Apply filters to the query
+
+
       if (filters.propertyType) {
         filteredQuery = query(listingsCollection, where('propertyType', '==', filters.propertyType));
       }
@@ -51,6 +56,14 @@ export default function ApplyFilters() {
         filteredQuery = query(listingsCollection, where('regularPrice', '<=', parseInt(filters.priceMax, 10)));
       }
 
+      if (filters.builtAreaMin) {
+        filteredQuery = query(listingsCollection, where('builtArea', '<=', parseInt(filters.builtAreaMin, 10)));
+      }
+
+      if (filters.builtAreaMax) {
+        filteredQuery = query(listingsCollection, where('builtArea', '<=', parseInt(filters.builtAreaMax, 10)));
+      }
+
       if (filters.bathrooms) {
         filteredQuery = query(listingsCollection, where('bathrooms', '==', filters.bathrooms));
       }
@@ -60,33 +73,38 @@ export default function ApplyFilters() {
       }
       
       if (filters.furnish) {
-        filteredQuery = query(listingsCollection, where('furnish', '==', filters.furnish));
+        filteredQuery = query(listingsCollection, where('furnished', '==', filters.furnish));
       }
-      console.log('3');
+
+      console.log('End of filters in apply filters block');
+
       // Execute the query
       const querySnapshot = await getDocs(filteredQuery);
       const lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
       setLastFetchListing(lastVisible);
-      console.log('4');
+      console.log('results fetched');
+
       // Extract listing data from the query snapshot
       const listings = querySnapshot.docs.map((doc) => ({
         id: doc.id,
         data: doc.data(),
       }));
-      console.log('5');
       setListings(listings);
-      console.log('6');
+      console.log('Listings updated');
       setLoading(false);
+
     } catch (error) {
       console.log(error);
       toast.error('Error fetching listings:', error);
       setLoading(false);
     }
   };
-  console.log('8');
+
+
+
   return (
     
-    <div className="max-w-6xl mx-auto pt-4 space-y-6">
+    <div className="max-w-7xl mx-auto pt-4 space-y-6">
       <label className={`ml-2 mt-3  py-4 text-sm font-semibold text-black-400 border-b-[3px] border-b-transparent`}>
         Property Type:
         <select className={'ml-1 mt-3 bg-white border-gray-300 rounded transition ease-in-out'}
@@ -96,7 +114,7 @@ export default function ApplyFilters() {
           <option value="house">House</option>
           <option value="apartment">Apartment</option>
           <option value="condo">Condo</option>
-          <option value="condo">Commercial</option>
+          <option value="commercial">Commercial</option>
         </select>
       </label>
 
@@ -108,7 +126,6 @@ export default function ApplyFilters() {
           <option value="">Any</option>
           <option value="sale">Sale</option>
           <option value="rent">Rent</option>
-          <option value="lease">Lease</option>
         </select>
       </label>
 
@@ -128,46 +145,38 @@ export default function ApplyFilters() {
         />
       </label>
 
-      <label className={`ml-3 ml-2 text-sm font-semibold text-black-400 border-b-[3px] border-b-transparent`}>
-        Baths:
-        <select className={'ml-1 bg-white border-gray-300 rounded transition ease-in-out'}
-          value={filters.bathrooms}
-          onChange={(e) => handleFilterChange('bathrooms', e.target.value)}
-        >
-          <option value="">Any</option>
-          <option value="1">1</option>
-          <option value="2">2</option>
-          <option value="3">3</option>
-          {/* Add more bath options as needed */}
-        </select>
+      <label className={`ml-2 mb-4 text-sm font-semibold text-black-400 border-b-[3px] border-b-transparent`}>
+        Built Area:
+        <input className={'ml-1 bg-white border-gray-300 rounded transition ease-in-out w-20'}
+          type="number"
+          placeholder="Min"
+          value={filters.builtAreaMin}
+          onChange={(e) => handleFilterChange('builtAreaMin', e.target.value)}
+        />
+        <input className={'ml-1 bg-white border-gray-300 rounded transition ease-in-out w-20'}
+          type="number"
+          placeholder="Max"
+          value={filters.builtAreaMax}
+          onChange={(e) => handleFilterChange('builtAreaMax', e.target.value)}
+        />
       </label>
 
       <label className={`ml-2 text-sm font-semibold text-black-400 border-b-[3px] border-b-transparent`}>
         Bedrooms:
-        <select className={'ml-1 bg-white border-gray-300 rounded transition ease-in-out'}
+        <input className={'ml-1 bg-white border-gray-300 rounded transition ease-in-out w-20'}
+          type="number"
           value={filters.bedrooms}
           onChange={(e) => handleFilterChange('bedrooms', e.target.value)}
-        >
-          <option value="">Any</option>
-          <option value="1">1</option>
-          <option value="2">2</option>
-          <option value="3">3</option>
-          {/* Add more bath options as needed */}
-        </select>
+        />
       </label>
 
       <label className={`ml-2 text-sm font-semibold text-black-400 border-b-[3px] border-b-transparent`}>
         Baths:
-        <select className={'ml-1 bg-white border-gray-300 rounded transition ease-in-out'}
+        <input className={'ml-1 bg-white border-gray-300 rounded transition ease-in-out w-20'}
+          type="number"
           value={filters.bathrooms}
           onChange={(e) => handleFilterChange('bathrooms', e.target.value)}
-        >
-          <option value="">Any</option>
-          <option value="1">1</option>
-          <option value="2">2</option>
-          <option value="3">3</option>
-          {/* Add more bath options as needed */}
-        </select>
+        />
       </label>
 
       <label className={`ml-2 py-4 text-sm font-semibold text-black-400 border-b-[3px] border-b-transparent`}>
@@ -177,8 +186,9 @@ export default function ApplyFilters() {
           onChange={(e) => handleFilterChange('furnish', e.target.value)}
         >
           <option value="">Any</option>
-          <option value="furnished">Furnished</option>
-          <option value="unfurnished">Unfurnished</option>
+          <option value="fully">Fully</option>
+          <option value="semi">Semi</option>
+          <option value="no">Unfurnished</option>
         </select>
       </label>
 
