@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getFirestore, collection, query, where, getDocs } from 'firebase/firestore';
+import { getFirestore, collection, query, where, getDocs,orderBy } from 'firebase/firestore';
 import Spinner from "../components/Spinner";
 import ListingItem from "../components/ListingItem";
 import { toast } from "react-toastify";
@@ -35,51 +35,77 @@ export default function ApplyFilters() {
       // Perform Firestore query using the filters
       const db = getFirestore();
       const listingsCollection = collection(db, 'listings');
-      let filteredQuery = query(listingsCollection);
+      let bathroomEmptyQ = query(listingsCollection);
+      let filteredQuery1 = query(listingsCollection);
+      let filteredQuery2 = query(listingsCollection);
       console.log('In the try block of apply filters');
       // Apply filters to the query
+      
 
-
-      if (filters.propertyType) {
-        filteredQuery = query(listingsCollection, where('propertyType', '==', filters.propertyType));
+      if (filters.propertyType || filters.type || filters.furnish || filters.bathrooms || filters.bedrooms){
+        console.log('inside filters check condition')
+        if(filters.bathrooms == "" ){
+          console.log('inside if bathrooms is empty condition')
+          bathroomEmptyQ = query(listingsCollection,where('bathrooms','>=','0'))
+        }
+        console.log('querying the filters1')
+        filteredQuery1 = query(bathroomEmptyQ, where('propertyType', '==', filters.propertyType),
+                                                  where('type', '==', filters.type),
+                                                  where('furnished', '==', filters.furnish),
+                                                  //where('bathrooms', '==', filters.bathrooms),
+                                                  //where('bedrooms', '==', filters.bedrooms),
+                                                  );
+        console.log('querying the filters2')
       }
 
-      if (filters.type) {
-        filteredQuery = query(listingsCollection, where('type', '==', filters.type));
-      }
-
-      if (filters.priceMin) {
-        filteredQuery = query(listingsCollection, where('regularPrice', '>=', parseInt(filters.priceMin, 10)));
-      }
-
-      if (filters.priceMax) {
-        filteredQuery = query(listingsCollection, where('regularPrice', '<=', parseInt(filters.priceMax, 10)));
-      }
-
-      if (filters.builtAreaMin) {
-        filteredQuery = query(listingsCollection, where('builtArea', '<=', parseInt(filters.builtAreaMin, 10)));
-      }
-
-      if (filters.builtAreaMax) {
-        filteredQuery = query(listingsCollection, where('builtArea', '<=', parseInt(filters.builtAreaMax, 10)));
-      }
-
-      if (filters.bathrooms) {
-        filteredQuery = query(listingsCollection, where('bathrooms', '==', filters.bathrooms));
-      }
-
-      if (filters.bedrooms) {
-        filteredQuery = query(listingsCollection, where('bedrooms', '==', filters.bedrooms));
+      if (filters.priceMin || filters.priceMax){											
+        // if(filters.bathrooms.trim() == "" ){
+        //   filters.bathrooms = "0";
+        // }
+        // if(filters.bedrooms.trim() == "" ){
+        //   filters.bedrooms = "0";
+        // }
+        filteredQuery2 = query(listingsCollection,where('reqularPrice', '>=', filters.priceMin),
+                                                  where('reqularPrice', '<=', filters.priceMax));
       }
       
-      if (filters.furnish) {
-        filteredQuery = query(listingsCollection, where('furnished', '==', filters.furnish));
-      }
+
+      // if (filters.type) {
+      //   filteredQuery = query(listingsCollection, where('type', '==', filters.type));
+      // }
+
+      // if (filters.priceMin) {
+      //   filteredQuery = query(listingsCollection, where('regularPrice', '>=', parseInt(filters.priceMin, 10)));
+      // }
+
+      // if (filters.priceMax) {
+      //   filteredQuery = query(listingsCollection, where('regularPrice', '<=', parseInt(filters.priceMax, 10)));
+      // }
+
+      // if (filters.builtAreaMin) {
+      //   filteredQuery = query(listingsCollection, where('builtArea', '<=', parseInt(filters.builtAreaMin, 10)));
+      // }
+
+      // if (filters.builtAreaMax) {
+      //   filteredQuery = query(listingsCollection, where('builtArea', '<=', parseInt(filters.builtAreaMax, 10)));
+      // }
+
+      // if (filters.bathrooms) {
+      //   filteredQuery = query(listingsCollection, where('bathrooms', '==', filters.bathrooms));
+      // }
+
+      // if (filters.bedrooms) {
+      //   filteredQuery = query(listingsCollection, where('bedrooms', '==', filters.bedrooms));
+      // }
+      
+      // if (filters.furnish) {
+      //   filteredQuery = query(listingsCollection, where('furnished', '==', filters.furnish));
+      // }
 
       console.log('End of filters in apply filters block');
 
       // Execute the query
-      const querySnapshot = await getDocs(filteredQuery);
+      const querySnapshot = await getDocs(filteredQuery2,filteredQuery1);
       const lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
       setLastFetchListing(lastVisible);
       console.log('results fetched');
