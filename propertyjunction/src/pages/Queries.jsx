@@ -18,19 +18,45 @@ export default function ApplyFilters() {
   const db = getFirestore();
   const listingsCollection = collection(db, 'listings');
 
-  // Define query1 logic
+  // Define query1
+  // Query to fetch commercial rent properties that have maximum bathrooms
   const query1Logic = () => {
     const propertyQuery = query(listingsCollection, where("propertyType", "==", "commercial"), orderBy("bathrooms", "desc"), limit(1));
     const propertyTypeQ = query(propertyQuery, where("type", "==", "rent"));
     return propertyTypeQ;
   };
 
+  // Define query2
+  // Query to get properties in hyderabad with max bedrooms and amenities that has gymnasium
   const query2Logic = () => {
     //step1: Get the maximum number of bedrooms
-    const maxBedrooms = query(listingsCollection,where("locality", "==", "Hyderabad"), orderBy("bedrooms","desc"),limit(1))
+    const maxBedrooms = query(listingsCollection,where("locality", "==", "Hyderabad"), orderBy("bedrooms","desc"),limit(1));
+    //step2: from above collection get the properties that has gymnasium
     const offerQuery = query(maxBedrooms,where("amenities", "array-contains", "gymnasium"));
     return offerQuery;
   };
+
+  // Define query3
+  // Fetch Houses on sale with offer and has more than 2 bedrooms
+  const query3Logic = () => {
+    const fetchHouses = query(listingsCollection,where("propertyType", "==", "house"), where("type", "==","sale"), where("offer", "==",true),
+                                                where("bedrooms",">=", "2"),orderBy("bedrooms"));
+    return fetchHouses;
+  };
+
+
+  const query4Logic = () => {
+    const maxBedrooms = query(listingsCollection,where("locality", "==", "Hyderabad"), orderBy("bedrooms","desc"),limit(1));
+    const offerQuery = query(maxBedrooms,where("amenities", "array-contains", "gymnasium"));
+    return offerQuery;
+  };
+
+  const query5Logic = () => {
+    const maxBedrooms = query(listingsCollection,where("locality", "==", "Hyderabad"), orderBy("bedrooms","desc"),limit(1));
+    const offerQuery = query(maxBedrooms,where("amenities", "array-contains", "gymnasium"));
+    return offerQuery;
+  };
+
 
   async function applyFilters() {
     setLoading(true);
@@ -65,8 +91,14 @@ export default function ApplyFilters() {
       case 'query1':
         return query1Logic();
       case 'query2':
-         return query2Logic();
-
+        return query2Logic();
+      case 'query3':
+        return query3Logic();
+      case 'query4':
+        return query4Logic();
+      case 'query5':
+        return query5Logic();
+        
       default:
         throw new Error(`Unsupported query: ${query}`);
     }
@@ -75,7 +107,7 @@ export default function ApplyFilters() {
   return (
     <div className="max-w-7xl mx-auto pt-4 space-y-6">
       <label className={`ml-2 mt-3 py-4 text-sm font-semibold text-black-400 border-b-[3px] border-b-transparent`}>
-        Queries
+        QUERIES
         <select
           className={'ml-1 mt-3 bg-white border-gray-300 rounded transition ease-in-out'}
           value={selectedQuery}
@@ -85,10 +117,11 @@ export default function ApplyFilters() {
           <option value="query2">Query 2</option>
           <option value="query3">Query 3</option>
           <option value="query4">Query 4</option>
+          <option value="query5">Query 5</option>
         </select>
       </label>
 
-      <button onClick={applyFilters} className="ml-2 bg-blue-600 text-white px-7 py-3 text-sm font-medium uppercase rounded shadow-md hover:bg-blue-700 transition duration-150 ease-in-out hover:shadow-lg active:bg-blue-800">Execute Query</button>
+      <button onClick={applyFilters} className="ml-2 bg-blue-600 text-white px-7 py-2.5 text-sm font-medium uppercase rounded shadow-md hover:bg-blue-700 transition duration-150 ease-in-out hover:shadow-lg active:bg-blue-800">Execute Query</button>
 
       {/* Rest of your code... */}
 	  <div className="max-w-6xl mx-auto px-3">
