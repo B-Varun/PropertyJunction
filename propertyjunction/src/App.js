@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import Filter from "./pages/Filters";
+import Queries from "./pages/Queries";
 import Profile from "./pages/Profile";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
@@ -31,8 +32,9 @@ function App() {
             path="/category/:categoryName/:listingId"
             element={<Listing />}
           />
-          <Route path="/offers" element={<Offers />} />
+          <Route path="/offers" element={<Offers/>} />
           <Route path="/filters" element={<Filter/>}/>
+          <Route path="/queries" element={<Queries/>}/>
           <Route path="/category/:categoryName" element={<Category />} />
           <Route path="create-listing" element={<PrivateRoute />}>
             <Route path="/create-listing" element={<CreateListing />} />
