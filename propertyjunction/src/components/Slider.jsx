@@ -12,11 +12,14 @@ import SwiperCore, {
 } from "swiper";
 import "swiper/css/bundle";
 import { useNavigate } from "react-router-dom";
+// The slider component is used to act as a slider for the website.
+// The entire webpage can be accessed by sliding this component down to watch more content
 export default function Slider() {
   const [listings, setListings] = useState(null);
   const [loading, setLoading] = useState(true);
   SwiperCore.use([Autoplay, Navigation, Pagination]);
   const navigate = useNavigate();
+  // This listens for changes of the slider movement and then movse the clider compoenent to view extra data.
   useEffect(() => {
     async function fetchListings() {
       const listingsRef = collection(db, "listings");

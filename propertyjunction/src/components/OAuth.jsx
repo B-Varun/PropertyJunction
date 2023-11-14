@@ -4,7 +4,8 @@ import { FcGoogle } from "react-icons/fc";
 import { toast } from "react-toastify";
 import { db } from "../firebase";
 import { useNavigate } from "react-router-dom";
-// The OAuth component
+// The OAuth component is used to verify the authority of the user.
+// exported by default for other compoenets to access the function
 export default function OAuth() {
   const navigate = useNavigate();
   async function onGoogleClick() {
@@ -15,10 +16,13 @@ export default function OAuth() {
       const user = result.user;
 
       // check for the user
+      // Checks if the user is present in the firebase, ifyes then it will login the user
+      // if not then the user is not authenticated
 
       const docRef = doc(db, "users", user.uid);
       const docSnap = await getDoc(docRef);
 
+      // This is the snapshot which is provided by the firestore, it gets the user credentials
       if (!docSnap.exists()) {
         await setDoc(docRef, {
           name: user.displayName,
@@ -27,6 +31,7 @@ export default function OAuth() {
         });
       }
 
+      // Navigates the user to the homepage
       navigate("/");
     } catch (error) {
       toast.error("Could not authorize with Google");

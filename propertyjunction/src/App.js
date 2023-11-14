@@ -15,6 +15,9 @@ import CreateListing from "./pages/CreateListing";
 import EditListing from "./pages/EditListing";
 import Listing from "./pages/Listing";
 import Category from "./pages/Category";
+
+// The central component of the application, it handles all the routes and the user interactions of the webpage.
+
 function App() {
   return (
     <>
@@ -32,9 +35,9 @@ function App() {
             path="/category/:categoryName/:listingId"
             element={<Listing />}
           />
-          <Route path="/offers" element={<Offers/>} />
-          <Route path="/filters" element={<Filter/>}/>
-          <Route path="/queries" element={<Queries/>}/>
+          <Route path="/offers" element={<Offers />} />
+          <Route path="/filters" element={<Filter />} />
+          <Route path="/queries" element={<Queries />} />
           <Route path="/category/:categoryName" element={<Category />} />
           <Route path="create-listing" element={<PrivateRoute />}>
             <Route path="/create-listing" element={<CreateListing />} />
