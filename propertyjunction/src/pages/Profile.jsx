@@ -16,7 +16,8 @@ import { db } from "../firebase";
 import { FcHome } from "react-icons/fc";
 import { useEffect } from "react";
 import ListingItem from "../components/ListingItem";
-
+// The profile component is rendered when the user clicks on the profile button on the homepage
+// It contains the listings along with the other data about a person.
 export default function Profile() {
   const auth = getAuth();
   const navigate = useNavigate();
@@ -28,10 +29,12 @@ export default function Profile() {
     email: auth.currentUser.email,
   });
   const { name, email } = formData;
+  // Is invoked when user logs out
   function onLogout() {
     auth.signOut();
     navigate("/");
   }
+  // Handles the onchange events
   function onChange(e) {
     setFormData((prevState) => ({
       ...prevState,
@@ -59,6 +62,7 @@ export default function Profile() {
     }
   }
   useEffect(() => {
+    // Fetch listings posted by current user ID
     async function fetchUserListings() {
       const listingRef = collection(db, "listings");
       const q = query(

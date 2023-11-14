@@ -26,7 +26,7 @@ export default function Home() {
         const q = query(
           listingRef,
           where("offer", "==", true),
-          orderBy("timestamp", "desc"),
+          orderBy("timestamp", "desc")
         );
 
         //execute the query

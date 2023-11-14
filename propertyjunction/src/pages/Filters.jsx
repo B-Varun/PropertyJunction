@@ -38,6 +38,7 @@ export default function ApplyFilters() {
     setNumArray(newArray);
   }, []);
 
+  // Handle the filter changes, sets the previous filters in state
   const handleFilterChange = (filterName, value) => {
     console.log("Inside handle filter change function");
     setFilters((prevFilters) => ({
@@ -45,7 +46,7 @@ export default function ApplyFilters() {
       [filterName]: value,
     }));
   };
-
+  // Function to check if the filters are set empty and handle it
   async function checforDefaults() {
     // if (filters.furnish == "" || filters.furnish == " ")
     //   handleFilterChange("furnish", ["All", "semi", "full"]);
@@ -84,6 +85,7 @@ export default function ApplyFilters() {
         console.log("querying the filters1");
         console.log("priceMin : " + filters.priceMin);
         console.log("Price Max : " + filters.priceMax);
+        // Main query for filters
         filteredQuery = query(
           listingsCollection,
           where("propertyType", "==", filters.propertyType),

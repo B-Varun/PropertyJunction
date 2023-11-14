@@ -35,9 +35,9 @@ export default function CreateListing() {
     securityDeposit: "",
     maintenanceCharges: "",
     locality: "",
-    pincode:123456,
-    amenities:"",
-    securitySafety:"",
+    pincode: 123456,
+    amenities: "",
+    securitySafety: "",
     images: {},
   });
   const {
@@ -60,11 +60,13 @@ export default function CreateListing() {
     amenities,
     securitySafety,
     securityDeposit,
-    maintenanceCharges
+    maintenanceCharges,
   } = formData;
-
+  // Calculate the price per square feet of a property
   const calculateSqftPrice = () => {
-    const calculatedSqftPrice = Number((regularPrice / builtArea * 10).toFixed(2));
+    const calculatedSqftPrice = Number(
+      ((regularPrice / builtArea) * 10).toFixed(2)
+    );
     setFormData((prevState) => ({
       ...prevState,
       sqftPrice: calculatedSqftPrice,
@@ -93,12 +95,11 @@ export default function CreateListing() {
         [e.target.id]: boolean ?? e.target.value,
       }));
 
-    // Calculate sqft price
+      // Calculate sqft price
 
-    if (e.target.id === 'regularPrice' || e.target.id === 'builtArea') {
-      calculateSqftPrice();
-    }
-    
+      if (e.target.id === "regularPrice" || e.target.id === "builtArea") {
+        calculateSqftPrice();
+      }
     }
   }
   async function onSubmit(e) {
@@ -109,12 +110,13 @@ export default function CreateListing() {
       toast.error("Discounted price needs to be less than regular price");
       return;
     }
+    // Maximum 6 images to be updated.
     if (images.length > 6) {
       setLoading(false);
       toast.error("maximum 6 images are allowed");
       return;
     }
-  
+
     async function storeImage(image) {
       return new Promise((resolve, reject) => {
         const storage = getStorage();
@@ -152,7 +154,7 @@ export default function CreateListing() {
         );
       });
     }
-
+    // Iterates through images if there are multiple
     const imgUrls = await Promise.all(
       [...images].map((image) => storeImage(image))
     ).catch((error) => {
@@ -160,7 +162,7 @@ export default function CreateListing() {
       toast.error("Images not uploaded");
       return;
     });
-
+    // Copy all data in to formDataCopy
     const formDataCopy = {
       ...formData,
       imgUrls,
@@ -169,6 +171,7 @@ export default function CreateListing() {
     };
     delete formDataCopy.images;
     !formDataCopy.offer && delete formDataCopy.discountedPrice;
+    // Add the data to firestore collection
     const docRef = await addDoc(collection(db, "listings"), formDataCopy);
     setLoading(false);
     toast.success("Listing created");
@@ -181,23 +184,28 @@ export default function CreateListing() {
   return (
     <main className="max-w-md px-2 mx-auto">
       <h1 className="text-3xl text-center mt-6 font-bold">Create a Listing</h1>
-      <div className="flex items-center  my-4 before:border-t before:flex-1 before:border-gray-800 after:border-t after:flex-1 after:border-gray-800">
-      </div>
+      <div className="flex items-center  my-4 before:border-t before:flex-1 before:border-gray-800 after:border-t after:flex-1 after:border-gray-800"></div>
       <form onSubmit={onSubmit}>
-      <p className="text-lg mt-6 font-semibold">
-        Property Type
-        <select className={'ml-1 mt-3 bg-white border-gray-300 rounded transition ease-in-out'}
-          id="propertyType"
-          value={propertyType}
-          required
-          onChange={(e) => setFormData({ ...formData, propertyType: e.target.value })}>
-          <option value="">Any</option>
-          <option value="house">House</option>
-          <option value="apartment">Apartment</option>
-          <option value="condo">Condo</option>
-          <option value="commercial">Commercial</option>
-        </select>
-      </p>
+        <p className="text-lg mt-6 font-semibold">
+          Property Type
+          <select
+            className={
+              "ml-1 mt-3 bg-white border-gray-300 rounded transition ease-in-out"
+            }
+            id="propertyType"
+            value={propertyType}
+            required
+            onChange={(e) =>
+              setFormData({ ...formData, propertyType: e.target.value })
+            }
+          >
+            <option value="">Any</option>
+            <option value="house">House</option>
+            <option value="apartment">Apartment</option>
+            <option value="condo">Condo</option>
+            <option value="commercial">Commercial</option>
+          </select>
+        </p>
         <p className="text-lg mt-6 font-semibold">Sell / Rent</p>
         <div className="flex">
           <button
@@ -239,7 +247,7 @@ export default function CreateListing() {
           required
           className="w-full px-4 py-2 text-xl text-gray-700 bg-white border border-gray-300 rounded transition duration-150 ease-in-out focus:text-gray-700 focus:bg-white focus:border-slate-600 mb-6"
         />
-         <div className="flex items-center mb-6">
+        <div className="flex items-center mb-6">
           <div className="">
             <p className="text-lg font-semibold">Built Area</p>
             <div className="flex w-full justify-center items-center space-x-6">
@@ -251,12 +259,12 @@ export default function CreateListing() {
                 required
                 className="w-full px-4 py-2 text-xl text-gray-700 bg-white border border-gray-300 rounded transition duration-150 ease-in-out focus:text-gray-700 focus:bg-white focus:border-slate-600 text-center"
               />
-                <div className="">
-                  <p className="text-md w-full whitespace-nowrap">SQ FT</p>
-                </div>
+              <div className="">
+                <p className="text-md w-full whitespace-nowrap">SQ FT</p>
+              </div>
             </div>
           </div>
-        </div> 
+        </div>
         <div className="flex space-x-6 mb-6">
           <div>
             <p className="text-lg font-semibold">Beds</p>
@@ -311,17 +319,23 @@ export default function CreateListing() {
           </button>
         </div>
         <p className="text-lg mt-6 font-semibold">
-        Furnish:
-        <select className={'ml-1 mt-3 bg-white border-gray-300 rounded transition ease-in-out'}
-          id="furnished"
-          required
-          value={furnished}
-          onChange={(e) => setFormData({ ...formData, furnished: e.target.value })}>
-          <option value="">Any</option>
-          <option value="fully">Fully</option>
-          <option value="semi">Semi</option>
-          <option value="no">No</option>
-        </select>
+          Furnish:
+          <select
+            className={
+              "ml-1 mt-3 bg-white border-gray-300 rounded transition ease-in-out"
+            }
+            id="furnished"
+            required
+            value={furnished}
+            onChange={(e) =>
+              setFormData({ ...formData, furnished: e.target.value })
+            }
+          >
+            <option value="">Any</option>
+            <option value="fully">Fully</option>
+            <option value="semi">Semi</option>
+            <option value="no">No</option>
+          </select>
         </p>
 
         <p className="text-lg mt-6 font-semibold">Security & Safety</p>
@@ -337,7 +351,9 @@ export default function CreateListing() {
                   ...prevFormData,
                   securitySafety: isChecked
                     ? [...prevFormData.securitySafety, "surveillance cameras"]
-                    : prevFormData.securitySafety.filter((value) => value !== "surveillance cameras"),
+                    : prevFormData.securitySafety.filter(
+                        (value) => value !== "surveillance cameras"
+                      ),
                 }));
               }}
             />
@@ -355,7 +371,9 @@ export default function CreateListing() {
                   ...prevFormData,
                   securitySafety: isChecked
                     ? [...prevFormData.securitySafety, "fire alarm"]
-                    : prevFormData.securitySafety.filter((value) => value !== "fire alarm"),
+                    : prevFormData.securitySafety.filter(
+                        (value) => value !== "fire alarm"
+                      ),
                 }));
               }}
             />
@@ -373,14 +391,16 @@ export default function CreateListing() {
                   ...prevFormData,
                   securitySafety: isChecked
                     ? [...prevFormData.securitySafety, "smoke detectors"]
-                    : prevFormData.securitySafety.filter((value) => value !== "smoke detectors"),
+                    : prevFormData.securitySafety.filter(
+                        (value) => value !== "smoke detectors"
+                      ),
                 }));
               }}
             />
             <span className="ml-2">Smoke Detectors</span>
           </label>
         </div>
-        
+
         <p className="text-lg mt-6 font-semibold">Amenities</p>
         <div className="ml-1 mt-3 space-y-2">
           <label className="inline-flex items-center">
@@ -394,7 +414,9 @@ export default function CreateListing() {
                   ...prevFormData,
                   amenities: isChecked
                     ? [...prevFormData.amenities, "swimming pool"]
-                    : prevFormData.amenities.filter((value) => value !== "swimming pool"),
+                    : prevFormData.amenities.filter(
+                        (value) => value !== "swimming pool"
+                      ),
                 }));
               }}
             />
@@ -412,7 +434,9 @@ export default function CreateListing() {
                   ...prevFormData,
                   amenities: isChecked
                     ? [...prevFormData.amenities, "lift"]
-                    : prevFormData.amenities.filter((value) => value !== "lift"),
+                    : prevFormData.amenities.filter(
+                        (value) => value !== "lift"
+                      ),
                 }));
               }}
             />
@@ -430,7 +454,9 @@ export default function CreateListing() {
                   ...prevFormData,
                   amenities: isChecked
                     ? [...prevFormData.amenities, "gymnasium"]
-                    : prevFormData.amenities.filter((value) => value !== "gymnasium"),
+                    : prevFormData.amenities.filter(
+                        (value) => value !== "gymnasium"
+                      ),
                 }));
               }}
             />
@@ -515,33 +541,33 @@ export default function CreateListing() {
                 <div className="">
                   <p className="text-md w-full whitespace-nowrap">$ / Month</p>
                 </div>
-              )}   
+              )}
             </div>
           </div>
           {type === "rent" && (
-          <div>
-            <p className="text-lg font-semibold">Security Deposit</p>
-            <input
-              type="number"
-              id="securityDeposit"
-              value={securityDeposit}
-              onChange={onChange}
-              className="w-full px-4 py-2 text-xl text-gray-700 bg-white border border-gray-300 rounded transition duration-150 ease-in-out focus:text-gray-700 focus:bg-white focus:border-slate-600 text-center"
-            />
-          </div>
+            <div>
+              <p className="text-lg font-semibold">Security Deposit</p>
+              <input
+                type="number"
+                id="securityDeposit"
+                value={securityDeposit}
+                onChange={onChange}
+                className="w-full px-4 py-2 text-xl text-gray-700 bg-white border border-gray-300 rounded transition duration-150 ease-in-out focus:text-gray-700 focus:bg-white focus:border-slate-600 text-center"
+              />
+            </div>
           )}
           {type === "sale" && (
-          <div>
-            <p className="text-lg font-semibold">Price/SqFt</p>
-            <input
-              type="disabled"
-              id="sqftPrice"
-              value={sqftPrice}
-              onChange={onChange}
-              disabled
-              className="w-full px-4 py-2 text-xl text-gray-700 bg-white border border-gray-300 rounded transition duration-150 ease-in-out focus:text-gray-700 focus:bg-white focus:border-slate-600 text-center"
-            />
-          </div>
+            <div>
+              <p className="text-lg font-semibold">Price/SqFt</p>
+              <input
+                type="disabled"
+                id="sqftPrice"
+                value={sqftPrice}
+                onChange={onChange}
+                disabled
+                className="w-full px-4 py-2 text-xl text-gray-700 bg-white border border-gray-300 rounded transition duration-150 ease-in-out focus:text-gray-700 focus:bg-white focus:border-slate-600 text-center"
+              />
+            </div>
           )}
         </div>
 
@@ -561,7 +587,7 @@ export default function CreateListing() {
             </div>
           </div>
         </div>
-        
+
         {offer && (
           <div className="flex items-center mb-6">
             <div className="">

@@ -63,6 +63,7 @@ export default function CreateListing() {
   const params = useParams();
 
   useEffect(() => {
+    // Fetch the listing
     if (listing && listing.userRef !== auth.currentUser.uid) {
       toast.error("You can't edit this listing");
       navigate("/");
@@ -117,6 +118,7 @@ export default function CreateListing() {
       toast.error("Discounted price needs to be less than regular price");
       return;
     }
+    // Maximum 6 images to upload
     if (images.length > 6) {
       setLoading(false);
       toast.error("maximum 6 images are allowed");
@@ -182,7 +184,7 @@ export default function CreateListing() {
         );
       });
     }
-
+    // Iterates through images if there are multiple
     const imgUrls = await Promise.all(
       [...images].map((image) => storeImage(image))
     ).catch((error) => {
@@ -190,7 +192,7 @@ export default function CreateListing() {
       toast.error("Images not uploaded");
       return;
     });
-
+    // Copy all data in to formDataCopy
     const formDataCopy = {
       ...formData,
       imgUrls,

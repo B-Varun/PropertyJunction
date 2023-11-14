@@ -5,6 +5,8 @@ import OAuth from "../components/OAuth";
 import { signInWithEmailAndPassword, getAuth } from "firebase/auth";
 import { toast } from "react-toastify";
 
+// The sign in component is rendered for the signin button clcicked by the user.
+// It is exporetd by default for the other compoenents to access it.
 export default function SignIn() {
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -13,12 +15,14 @@ export default function SignIn() {
   });
   const { email, password } = formData;
   const navigate = useNavigate();
+  // Invoked for every input change of a field
   function onChange(e) {
     setFormData((prevState) => ({
       ...prevState,
       [e.target.id]: e.target.value,
     }));
   }
+  // Contact db and use the default functions to sign in
   async function onSubmit(e) {
     e.preventDefault();
     try {
@@ -72,7 +76,6 @@ export default function SignIn() {
             </div>
             <div className="flex justify-between whitespace-nowrap text-sm sm:text-lg">
               <p className="mb-6">
-                
                 <Link
                   to="/sign-up"
                   className="text-red-600 hover:text-red-700 transition duration-200 ease-in-out ml-1"

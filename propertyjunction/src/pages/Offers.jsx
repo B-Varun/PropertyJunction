@@ -15,19 +15,24 @@ import Spinner from "../components/Spinner";
 import ListingItem from "../components/ListingItem";
 import { async } from "@firebase/util";
 
+// Component is rendered when the offers page is clicked. It gets the offers from firestore
+// and displays them to the user screen
 export default function Offers() {
   const [listings, setListings] = useState(null);
   const [loading, setLoading] = useState(true);
   const [lastFetchedListing, setLastFetchListing] = useState(null);
   useEffect(() => {
+    // Fetch listings based on the query
     async function fetchListings() {
       try {
         const listingRef = collection(db, "listings");
+        // Query to fetch the listings if they have offer on it
         const q = query(
           listingRef,
           where("offer", "==", true),
-          orderBy("timestamp", "desc"),
+          orderBy("timestamp", "desc")
         );
+        // Update the listings in real-time on UI, Realtime listener
 
         const unsubscribe = onSnapshot(q, (querySnap) => {
           const lastVisible = querySnap.docs[querySnap.docs.length - 1];
@@ -40,7 +45,7 @@ export default function Offers() {
           setListings(updatedListings);
           setLoading(false);
         });
-        
+
         // Cleanup function
         return () => unsubscribe();
       } catch (error) {

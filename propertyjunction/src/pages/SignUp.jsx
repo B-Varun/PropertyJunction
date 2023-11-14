@@ -12,6 +12,8 @@ import { doc, serverTimestamp, setDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
+// The sign in component is rendered for the signout button clcicked by the user.
+// It is exported by default for the other compoenents to access it.
 export default function SignUp() {
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -22,11 +24,13 @@ export default function SignUp() {
   const { name, email, password } = formData;
   const navigate = useNavigate();
   function onChange(e) {
+    // Invoked for every onchange event or keypress
     setFormData((prevState) => ({
       ...prevState,
       [e.target.id]: e.target.value,
     }));
   }
+  // Connects with firestore to submit the user credentials
   async function onSubmit(e) {
     e.preventDefault();
 
@@ -48,11 +52,10 @@ export default function SignUp() {
 
       await setDoc(doc(db, "users", user.uid), formDataCopy);
       toast.success("Sign Up is successful, navigating to home");
-      console.log("Sign Up success")
+      console.log("Sign Up success");
       setTimeout(() => {
         navigate("/");
       }, 2000);
-      
     } catch (error) {
       toast.error("Something went wrong with the registration");
     }

@@ -6,7 +6,7 @@ import OAuth from "../components/OAuth";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
-
+  //Handle if the email is changed in the field
   function onChange(e) {
     setEmail(e.target.value);
   }
@@ -14,6 +14,7 @@ export default function ForgotPassword() {
   async function onSubmit(e) {
     e.preventDefault();
     try {
+      // Get auth from firestore for authentication
       const auth = getAuth();
       await sendPasswordResetEmail(auth, email);
       toast.success("Email was sent");

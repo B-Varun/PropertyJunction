@@ -11,18 +11,19 @@ import {
 import Spinner from "../components/Spinner";
 import ListingItem from "../components/ListingItem";
 import { toast } from "react-toastify";
-
+// The queries webpage is the component that is exported by default to get accessed to execute multiple queries
+// There are queries which retrieve the most number of bedrooms or bathrooms for a house.
 export default function ApplyFilters() {
   const [listings, setListings] = useState(null);
   const [loading, setLoading] = useState(false);
   const [lastFetchedListing, setLastFetchListing] = useState(null);
   const [selectedQuery, setSelectedQuery] = useState("query1");
-
+  // Handle the query change in dropdown
   const handleFilterChange = (value) => {
     console.log("Inside handle filter change function");
     setSelectedQuery(value);
   };
-
+  // Connect with firestore
   const db = getFirestore();
   const listingsCollection = collection(db, "listings");
 

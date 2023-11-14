@@ -20,6 +20,7 @@ export default function Category() {
   const [lastFetchedListing, setLastFetchListing] = useState(null);
   const params = useParams();
   useEffect(() => {
+    // Function to fetch listings based on listings type.
     async function fetchListings() {
       try {
         const listingRef = collection(db, "listings");
@@ -48,7 +49,7 @@ export default function Category() {
 
     fetchListings();
   }, [params.categoryName]);
-
+  // Function to fetch more listings when Load More button is clicked
   async function onFetchMoreListings() {
     try {
       const listingRef = collection(db, "listings");
