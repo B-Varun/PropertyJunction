@@ -50,7 +50,7 @@ export default function ApplyFilters() {
     if (filters.priceMax === "" || filters.priceMax === " ")
       handleFilterChange("priceMin", "0");
     if (filters.priceMin === "" || filters.priceMin === " ")
-      handleFilterChange("priceMax", "1000000000");
+      handleFilterChange("priceMax", "900000");
   }
 
   async function applyFilters() {
