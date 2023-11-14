@@ -15,6 +15,7 @@ export default function ApplyFilters() {
   const [listings, setListings] = useState(null);
   const [loading, setLoading] = useState(false);
   const [lastFetchedListing, setLastFetchListing] = useState(null);
+  const [numArray, setNumArray] = useState([]);
   const [filters, setFilters] = useState({
     propertyType: "commercial",
     type: "sale",
@@ -31,6 +32,11 @@ export default function ApplyFilters() {
       console.log("Bedrooms have been updated:", filters.bedrooms);
     }
   }, [filters.bedrooms]);
+
+  useEffect(() => {
+    const newArray = Array.from({ length: 50 }, (_, index) => index + 1);
+    setNumArray(newArray);
+  }, []);
 
   const handleFilterChange = (filterName, value) => {
     console.log("Inside handle filter change function");
@@ -76,6 +82,8 @@ export default function ApplyFilters() {
         console.log("inside filters check condition");
 
         console.log("querying the filters1");
+        console.log("priceMin : " + filters.priceMin);
+        console.log("Price Max : " + filters.priceMax);
         filteredQuery = query(
           listingsCollection,
           where("propertyType", "==", filters.propertyType),
@@ -125,7 +133,7 @@ export default function ApplyFilters() {
           value={filters.propertyType}
           onChange={(e) => handleFilterChange("propertyType", e.target.value)}
         >
-          <option value="">Any</option>
+          {/* <option value="">Any</option> */}
           <option value="house">House</option>
           <option value="apartment">Apartment</option>
           <option value="condo">Condo</option>
@@ -144,7 +152,7 @@ export default function ApplyFilters() {
           value={filters.type}
           onChange={(e) => handleFilterChange("type", e.target.value)}
         >
-          <option value="">Any</option>
+          {/* <option value="">Any</option> */}
           <option value="sale">Sale</option>
           <option value="rent">Rent</option>
         </select>
@@ -237,7 +245,7 @@ export default function ApplyFilters() {
           value={filters.furnish}
           onChange={(e) => handleFilterChange("furnish", e.target.value)}
         >
-          <option value="">Any</option>
+          {/* <option value="">Any</option> */}
           <option value="fully">Fully</option>
           <option value="semi">Semi</option>
           <option value="no">Unfurnished</option>
