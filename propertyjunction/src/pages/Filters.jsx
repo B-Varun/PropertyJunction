@@ -41,10 +41,16 @@ export default function ApplyFilters() {
   };
 
   async function checforDefaults() {
+    // if (filters.furnish == "" || filters.furnish == " ")
+    //   handleFilterChange("furnish", ["All", "semi", "full"]);
     if (filters.bedrooms === "" || filters.bedrooms === " ")
       handleFilterChange("bedrooms", ["1", "2", "3", "4", "5"]);
     if (filters.bathrooms === "" || filters.bathrooms === " ")
       handleFilterChange("bathrooms", ["1", "2", "3", "4", "5"]);
+    if (filters.priceMax === "" || filters.priceMax === " ")
+      handleFilterChange("priceMin", "0");
+    if (filters.priceMin === "" || filters.priceMin === " ")
+      handleFilterChange("priceMax", "1000000000");
   }
 
   async function applyFilters() {
@@ -76,7 +82,9 @@ export default function ApplyFilters() {
           where("type", "==", filters.type),
           where("furnished", "==", filters.furnish),
           where("bedrooms", "in", filters.bedrooms),
-          where("bathrooms", "in", filters.bathrooms)
+          where("bathrooms", "in", filters.bathrooms),
+          where("regularPrice", ">=", filters.priceMin),
+          where("regularPrice", "<=", filters.priceMax + 1)
         );
       }
       console.log("N O BR : " + filters.bedrooms);
@@ -166,7 +174,7 @@ export default function ApplyFilters() {
         />
       </label>
 
-      <label
+      {/* <label
         className={`ml-2 mb-4 text-sm font-semibold text-black-400 border-b-[3px] border-b-transparent`}
       >
         Built Area:
@@ -188,7 +196,7 @@ export default function ApplyFilters() {
           value={filters.builtAreaMax}
           onChange={(e) => handleFilterChange("builtAreaMax", e.target.value)}
         />
-      </label>
+      </label> */}
 
       <label
         className={`ml-2 text-sm font-semibold text-black-400 border-b-[3px] border-b-transparent`}
