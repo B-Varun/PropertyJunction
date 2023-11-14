@@ -4,9 +4,15 @@ import { useEffect } from "react";
 import { toast } from "react-toastify";
 import { db } from "../firebase";
 
+// This component is used to render the Contacts page of the application.
+// Every listing has its own contact page that will help you to contact the property landlord.
+
 export default function Contact({ userRef, listing }) {
   const [landlord, setLandlord] = useState(null);
   const [message, setMessage] = useState("");
+
+  //UseEffect gets triggered for every change in the userRef
+
   useEffect(() => {
     async function getLandlord() {
       const docRef = doc(db, "users", userRef);
@@ -19,6 +25,8 @@ export default function Contact({ userRef, listing }) {
     }
     getLandlord();
   }, [userRef]);
+
+  // For every change in the message the onchange function is invoked to set the message
   function onChange(e) {
     setMessage(e.target.value);
   }
@@ -42,7 +50,10 @@ export default function Contact({ userRef, listing }) {
           <a
             href={`mailto:${landlord.email}?Subject=${listing.name}&body=${message}`}
           >
-            <button className="px-7 py-3 bg-blue-600 text-white rounded text-sm uppercase shadow-md hover:bg-blue-700 hover:shadow-lg focus:bg-blue-700 focus:shadow-lg active:bg-blue-800 active:shadow-lg transition duration-150 ease-in-out w-full text-center mb-6" type="button">
+            <button
+              className="px-7 py-3 bg-blue-600 text-white rounded text-sm uppercase shadow-md hover:bg-blue-700 hover:shadow-lg focus:bg-blue-700 focus:shadow-lg active:bg-blue-800 active:shadow-lg transition duration-150 ease-in-out w-full text-center mb-6"
+              type="button"
+            >
               Send Message
             </button>
           </a>

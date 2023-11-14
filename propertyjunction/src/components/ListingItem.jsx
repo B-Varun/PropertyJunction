@@ -3,6 +3,12 @@ import { Link } from "react-router-dom";
 import { MdLocationOn } from "react-icons/md";
 import { FaTrash } from "react-icons/fa";
 import { MdEdit } from "react-icons/md";
+
+// The Listing Item component is used to collect the list of all the properties present in the firestore
+// Once it gets the list then it will render the information onto the user display.
+// The component is exported by default so that other components can use it without issues
+// Each listing is rendered as a single model, this model contains information about all the properties
+
 export default function ListingItem({ listing, id, onEdit, onDelete }) {
   return (
     <li className="relative bg-white flex flex-col justify-between items-center shadow-md hover:shadow-xl rounded-md overflow-hidden transition-shadow duration-150 m-[10px]">
